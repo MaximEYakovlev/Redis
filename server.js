@@ -2,7 +2,14 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const Redis = require("redis");
-const redisClient = Redis.createClient();
+
+let redisClient;
+
+(async () => {
+  redisClient = Redis.createClient();
+  redisClient.on("error", (err) => console.log("Redis Client Error", err));
+  await redisClient.connect();
+})();
 
 const DEFAULT_EXPIRATION = 3600;
 
