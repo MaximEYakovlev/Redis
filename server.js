@@ -18,13 +18,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/photos", async (req, res) => {
-  const albumId = req.query.albumId;
   const { data } = await axios.get(
-    "https://jsonplaceholder.typicode.com/photos",
-    { params: { albumId } }
+    "https://jsonplaceholder.typicode.com/photos"
   );
+
   redisClient.setEx("photos", DEFAULT_EXPIRATION, JSON.stringify(data));
-  res.json(data);
+
+  const dataFromRedis = await redisClient.get("photos", (error, photos) => {
+    return photos;
+  });
+  res.json(dataFromRedis);
 });
 
 app.get("/photos/:id", async (req, res) => {
