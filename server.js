@@ -27,7 +27,10 @@ app.get("/photos", async (req, res) => {
   const dataFromRedis = await redisClient.get("photos", (error, photos) => {
     return photos;
   });
-  res.json(dataFromRedis);
+
+  if (dataFromRedis) res.json(dataFromRedis);
+
+  res.json(data);
 });
 
 app.get("/photos/:id", async (req, res) => {
