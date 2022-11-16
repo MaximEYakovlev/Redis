@@ -18,26 +18,36 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/photos", async (req, res) => {
+  const albumId = req.query.albumId;
   const { data } = await axios.get(
-    "https://jsonplaceholder.typicode.com/photos"
+    `https://jsonplaceholder.typicode.com/photos?albumId=${albumId}`
   );
 
-  redisClient.setEx("photos", DEFAULT_EXPIRATION, JSON.stringify(data));
-
-  const dataFromRedis = await redisClient.get("photos", (error, photos) => {
-    return photos;
-  });
-
-  if (dataFromRedis) res.json(dataFromRedis);
-
-  res.json(data);
-});
-
-app.get("/photos/:id", async (req, res) => {
-  const { data } = await axios.get(
-    `https://jsonplaceholder.typicode.com/photos/${req.params.id}`
+  redisClient.setEx(
+    `photos?albumId=${albumId}`,
+    DEFAULT_EXPIRATION,
+    JSON.stringify(data)
   );
-  res.json(data);
+
+  const dataFromRedis = await redisClient.get(
+    `photos?albumId=${albumId}`,
+    (error, photos) => {
+      return photos;
+    }
+  );
+
+  if (dataFromRedis) {
+    res.json(dataFromRedis);
+  } else {
+    res.json(data);
+  }
 });
+
+// app.get("/photos/:id", async (req, res) => {
+//   const { data } = await axios.get(
+//     `https://jsonplaceholder.typicode.com/photos/${req.params.id}`
+//   );
+//   res.json(data);
+// });
 
 app.listen(3000);
