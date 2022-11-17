@@ -43,11 +43,31 @@ app.get("/photos", async (req, res) => {
   }
 });
 
-// app.get("/photos/:id", async (req, res) => {
-//   const { data } = await axios.get(
-//     `https://jsonplaceholder.typicode.com/photos/${req.params.id}`
-//   );
-//   res.json(data);
-// });
+app.get("/photos/:id", async (req, res) => {
+  photoId = req.params.id;
+
+  const { data } = await axios.get(
+    `https://jsonplaceholder.typicode.com/photos/${photoId}`
+  );
+
+  redisClient.setEx(
+    `photos/${photoId}`,
+    DEFAULT_EXPIRATION,
+    JSON.stringify(data)
+  );
+
+  const dataFromRedis = await redisClient.get(
+    `photos/${photoId}`,
+    (error, photos) => {
+      return photos;
+    }
+  );
+
+  if (dataFromRedis) {
+    res.json(dataFromRedis);
+  } else {
+    res.json(data);
+  }
+});
 
 app.listen(3000);
